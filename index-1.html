@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ta" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1B3A6B">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Lanka Remit</title>
+<style>
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --ink:#14213D; --muted:#5B6678; --line:#D9DEE8;
+  --brand:#1B3A6B; --brand-ink:#FFFFFF; --mark:#F2A900; --mark-ink:#3A2A00; --ok:#17794A; --okbg:#E3F4EA;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0E1420; --surface:#18202F; --ink:#E8ECF3; --muted:#9AA6BA; --line:#2B3548;
+    --brand:#8FB3F0; --brand-ink:#0B1A33; --mark:#F2B83A; --mark-ink:#2A1D00; --ok:#5CCB93; --okbg:#173325;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Noto Sans Tamil","Noto Sans Sinhala","Noto Sans Arabic","Noto Sans Devanagari","Noto Sans Malayalam","Latha","Iskoola Pota","Nirmala UI","Segoe UI",system-ui,sans-serif;
+  background:var(--surface);color:var(--ink);line-height:1.55;
+}
+.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.top{background:var(--brand);color:var(--brand-ink);padding:14px 18px;padding-top:max(14px,env(safe-area-inset-top))}
+.top-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top h1{font-size:18px}
+.top p{font-size:13px;opacity:.9;margin-top:4px}
+.lang{width:auto;padding:6px 10px;border-radius:8px;border:0;background:rgba(255,255,255,.2);color:inherit;font:inherit;font-size:14px}
+.lang option{color:#14213D}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;padding:13px 4px;border:0;background:none;color:var(--muted);font:inherit;font-size:14px;cursor:pointer;border-bottom:3px solid transparent}
+.tabs button.on{color:var(--brand);font-weight:700;border-bottom-color:var(--mark)}
+.page{display:none;padding:18px;flex:1}
+.page.on{display:block}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+input,select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+h2{font-size:15px;margin:22px 0 10px}
+.prov{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.prov-head{display:flex;justify-content:space-between;align-items:center}
+.prov-head b{font-size:15px}
+.x{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px}
+.prov .two label{margin-top:6px}
+.res{list-style:none}
+.res li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+.res li.best{border-color:var(--ok);background:var(--okbg)}
+.res .n{font-weight:700}
+.res .s{font-size:12px;color:var(--muted)}
+.res .big{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;background:var(--ok);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;margin-inline-start:6px}
+.go{display:inline-block;margin-top:6px;padding:7px 14px;border-radius:8px;background:var(--mark);color:var(--mark-ink);font-weight:700;font-size:13px;text-decoration:none}
+.btn{width:100%;padding:12px;border-radius:10px;border:1px dashed var(--line);background:none;color:var(--brand);font:inherit;font-weight:700;cursor:pointer}
+.empty{color:var(--muted);font-size:14px;padding:12px 0}
+.tips{list-style:none}
+.tips li{padding:12px 0;border-bottom:1px solid var(--line);font-size:15px;display:flex;gap:10px}
+.tips li span{color:var(--mark);font-weight:700}
+.disc{font-size:12px;color:var(--muted);margin-top:22px;padding-top:12px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="top-row">
+      <h1>Lanka Remit</h1>
+      <select class="lang" id="lang" aria-label="Language">
+        <option value="ta">தமிழ்</option>
+        <option value="si">සිංහල</option>
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="ml">മലയാളം</option>
+        <option value="ar">العربية</option>
+        <option value="it">Italiano</option>
+        <option value="ko">한국어</option>
+        <option value="ja">日本語</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="ms">Bahasa Melayu</option>
+      </select>
+    </div>
+    <p id="sub"></p>
+  </header>
+
+  <nav class="tabs">
+    <button class="on" data-p="cmp" id="tCmp"></button>
+    <button data-p="safe" id="tSafe"></button>
+  </nav>
+
+  <section class="page on" id="p-cmp">
+    <label for="amt" id="lAmt"></label>
+    <div class="two">
+      <input id="amt" type="number" inputmode="decimal" min="0" step="any" placeholder="500">
+      <select id="cur"></select>
+    </div>
+    <label for="mid" id="lMid"></label>
+    <input id="mid" type="number" inputmode="decimal" min="0" step="any" placeholder="300">
+    <p class="hint" id="hMid"></p>
+
+    <h2 id="hRes"></h2>
+    <ul class="res" id="res"></ul>
+
+    <h2 id="hProv"></h2>
+    <div id="provs"></div>
+    <button class="btn" id="add"></button>
+  </section>
+
+  <section class="page" id="p-safe">
+    <ul class="tips" id="tips"></ul>
+  </section>
+
+  <p class="hint" id="more" style="margin:0 18px 8px"></p>
+  <p class="disc" id="disc" style="margin:0 18px 24px"></p>
+</div>
+
+<script>
+"use strict";
+/* ===== உங்கள் இணைப்புகள் (affiliate links) =====
+   சேவையின் affiliate இணைப்பு கிடைத்ததும் இங்கே ஒட்டுங்கள்.
+   காலியாக இருந்தால் "அனுப்ப" பொத்தான் தெரியாது. */
+const LINKS={
+  "Wise":"",
+  "Remitly":"",
+  "WorldRemit":"",
+  "Western Union":"",
+  "MoneyGram":"",
+  "Xoom":"",
+  "OrbitRemit":""
+};
+
+const T={
+ta:{sub:"இலங்கைக்கு அனுப்பும்போது பெறுநருக்கு உண்மையில் எவ்வளவு கிடைக்கும் என்று பாருங்கள்",
+  tCmp:"ஒப்பீடு",tSafe:"பாதுகாப்பு",
+  amt:"அனுப்பும் மொத்தத் தொகை (கட்டணம் உட்பட)",mid:"சந்தை விகிதம்: 1 அலகு = ? LKR",
+  hMid:"Google அல்லது xe.com இல் இன்றைய விகிதத்தைப் பார்த்து உள்ளிடுங்கள்",
+  res:"முடிவு",prov:"சேவைகள் (அவர்களின் இணையதளத்தில் காட்டுவதை உள்ளிடுங்கள்)",
+  fee:"கட்டணம்",rate:"அவர்கள் காட்டும் விகிதம்",add:"+ சேவை சேர்",addAsk:"சேவையின் பெயர்?",
+  recv:"பெறுநர் பெறுவது",hidden:"மறைந்த செலவு",best:"சிறந்தது",less:"குறைவு",
+  none:"மேலே உள்ள தொகை, சந்தை விகிதத்தை உள்ளிட்டு, கீழே சேவைகளின் கட்டணம் மற்றும் விகிதத்தை நிரப்புங்கள்.",
+  send:"அனுப்ப",del:"நீக்கு",
+  tips:["உரிமம் பெற்ற சேவைகள் அல்லது வங்கிகளையே பயன்படுத்துங்கள். உரிமமற்ற வழிகளில் பணம் இழக்கவும் சட்டச் சிக்கலில் சிக்கவும் வாய்ப்புண்டு.",
+    "கட்டணத்தை மட்டும் அல்ல, பெறுநருக்குக் கிடைக்கும் ரூபாயை ஒப்பிடுங்கள்.",
+    "உறுதி செய்யும் முன் விகிதத்தை மீண்டும் பாருங்கள், அது மாறும்.",
+    "நீங்கள் சரிபார்க்காத யாருக்கும் பணம் அனுப்பாதீர்கள், குறிப்பாக வேலை வாய்ப்பு, பரிசு, \"அவசரம்\" என்று கேட்பவர்களுக்கு.",
+    "அனுப்பும் முன் பெறுநரின் பெயர், கணக்கு எண்ணைச் சரிபாருங்கள்.",
+    "பணம் சேரும்வரை பரிவர்த்தனை குறிப்பு எண்ணைப் பத்திரப்படுத்துங்கள்."],
+  disc:"கட்டணங்களும் விகிதங்களும் நீங்கள் உள்ளிடுபவை; அனுப்பும் முன் சேவையின் இணையதளத்தில் உறுதிசெய்யுங்கள். இந்த ஆப் பணத்தைக் கையாளாது, நிதி ஆலோசனையும் அல்ல. சில இணைப்புகள் மூலம் எங்களுக்குக் கமிஷன் கிடைக்கலாம்; அது தரவரிசையை மாற்றாது."},
+si:{sub:"ශ්‍රී ලංකාවට යවන විට ලබන්නාට සැබවින්ම ලැබෙන මුදල බලන්න",
+  tCmp:"සැසඳීම",tSafe:"ආරක්ෂාව",
+  amt:"යවන මුළු මුදල (ගාස්තුව ඇතුළුව)",mid:"වෙළඳපොළ අනුපාතය: 1 ඒකකය = ? LKR",
+  hMid:"අද අනුපාතය Google හෝ xe.com හි බලා ඇතුළත් කරන්න",
+  res:"ප්‍රතිඵල",prov:"සේවා (ඔවුන්ගේ වෙබ් අඩවියේ පෙන්වන දේ ඇතුළත් කරන්න)",
+  fee:"ගාස්තුව",rate:"ඔවුන් පෙන්වන අනුපාතය",add:"+ සේවාවක් එක් කරන්න",addAsk:"සේවාවේ නම?",
+  recv:"ලබන්නාට ලැබෙන්නේ",hidden:"සැඟවුණු පිරිවැය",best:"හොඳම",less:"අඩුයි",
+  none:"ඉහත මුදල සහ වෙළඳපොළ අනුපාතය ඇතුළත් කර, පහළ සේවාවල ගාස්තුව සහ අනුපාතය පුරවන්න.",
+  send:"යවන්න",del:"ඉවත් කරන්න",
+  tips:["බලපත්‍රලත් සේවා හෝ බැංකු පමණක් භාවිත කරන්න. බලපත්‍රයක් නැති ක්‍රම නිසා මුදල් අහිමි වීමට සහ නීතිමය ගැටලුවලට මුහුණ දීමට සිදු විය හැක.",
+    "ගාස්තුව පමණක් නොව, ලබන්නාට ලැබෙන රුපියල් ප්‍රමාණය සසඳන්න.",
+    "තහවුරු කිරීමට පෙර අනුපාතය නැවත පරීක්ෂා කරන්න; එය වෙනස් වේ.",
+    "ඔබ තහවුරු කර නොගත් කිසිවෙකුට මුදල් නොයවන්න, විශේෂයෙන් රැකියා පිරිනැමීම්, ත්‍යාග හෝ \"හදිසි\" ඉල්ලීම් සඳහා.",
+    "යැවීමට පෙර ලබන්නාගේ නම සහ ගිණුම් අංකය දෙවරක් පරීක්ෂා කරන්න.",
+    "මුදල් ලැබෙන තුරු යොමු අංකය ආරක්ෂා කර ගන්න."],
+  disc:"ගාස්තු සහ අනුපාත ඔබ ඇතුළත් කරන ඒවාය; යැවීමට පෙර සේවාවේ වෙබ් අඩවියෙන් තහවුරු කරගන්න. මෙම යෙදුම මුදල් හසුරුවන්නේ නැත, මුල්‍ය උපදෙස් ද නොවේ. සමහර සබැඳි මගින් අපට කොමිස් මුදලක් ලැබිය හැක; එය ශ්‍රේණිගත කිරීම වෙනස් නොකරයි."},
+en:{sub:"See what your family in Sri Lanka really receives",
+  tCmp:"Compare",tSafe:"Stay safe",
+  amt:"Total you send (fee included)",mid:"Market rate: 1 unit = ? LKR",
+  hMid:"Look up today's rate on Google or xe.com and enter it",
+  res:"Results",prov:"Providers (enter what their website shows)",
+  fee:"Fee",rate:"Rate they offer",add:"+ Add provider",addAsk:"Provider name?",
+  recv:"Receiver gets",hidden:"Hidden cost",best:"Best",less:"less",
+  none:"Enter the amount and market rate above, then fill in each provider's fee and rate below.",
+  send:"Send",del:"Remove",
+  tips:["Use licensed providers or banks only. Unlicensed channels can mean lost money and legal trouble.",
+    "Compare the rupees the receiver gets, not just the fee.",
+    "Check the rate again just before you confirm. It changes.",
+    "Never send money to someone you haven't verified, especially for job offers, prizes or \"urgent\" requests.",
+    "Double-check the recipient's name and account number before sending.",
+    "Keep the reference number until the money arrives."],
+  disc:"Fees and rates are entered by you; confirm them on the provider's site before sending. This app does not handle money and is not financial advice. Some links may earn us a commission; it never changes the ranking."},
+hi:{sub:"देखें कि श्रीलंका में आपके परिवार को असल में कितना मिलता है",
+  tCmp:"तुलना",tSafe:"सुरक्षा",
+  amt:"भेजी जाने वाली कुल राशि (शुल्क सहित)",mid:"बाज़ार दर: 1 इकाई = ? LKR",
+  hMid:"Google या xe.com पर आज की दर देखकर दर्ज करें",
+  res:"नतीजे",prov:"सेवाएँ (उनकी वेबसाइट पर जो दिखे वह दर्ज करें)",
+  fee:"शुल्क",rate:"उनकी दर",add:"+ सेवा जोड़ें",addAsk:"सेवा का नाम?",
+  recv:"प्राप्तकर्ता को मिलेगा",hidden:"छिपी लागत",best:"सबसे अच्छा",less:"कम",
+  none:"ऊपर राशि और बाज़ार दर दर्ज करें, फिर नीचे हर सेवा का शुल्क और दर भरें।",
+  send:"भेजें",del:"हटाएँ",
+  tips:["केवल लाइसेंस प्राप्त सेवाओं या बैंकों का उपयोग करें। बिना लाइसेंस वाले रास्तों से पैसा डूब सकता है और कानूनी परेशानी हो सकती है।",
+    "सिर्फ़ शुल्क नहीं, प्राप्तकर्ता को मिलने वाले रुपये की तुलना करें।",
+    "पुष्टि करने से ठीक पहले दर फिर जाँचें, यह बदलती रहती है।",
+    "जिसे आपने जाँचा नहीं है, उसे पैसे न भेजें, खासकर नौकरी के ऑफ़र, इनाम या \"ज़रूरी\" माँगों पर।",
+    "भेजने से पहले प्राप्तकर्ता का नाम और खाता संख्या दोबारा जाँचें।",
+    "पैसे पहुँचने तक रेफ़रेंस नंबर सँभालकर रखें।"],
+  disc:"शुल्क और दरें आप खुद दर्ज करते हैं; भेजने से पहले सेवा की वेबसाइट पर उनकी पुष्टि करें। यह ऐप पैसे नहीं संभालता और वित्तीय सलाह नहीं है। कुछ लिंक से हमें कमीशन मिल सकता है; इससे रैंकिंग नहीं बदलती।"},
+ml:{sub:"ശ്രീലങ്കയിലെ നിങ്ങളുടെ കുടുംബത്തിന് യഥാർത്ഥത്തിൽ എത്ര കിട്ടും എന്ന് നോക്കൂ",
+  tCmp:"താരതമ്യം",tSafe:"സുരക്ഷ",
+  amt:"അയയ്ക്കുന്ന ആകെ തുക (ഫീസ് ഉൾപ്പെടെ)",mid:"മാർക്കറ്റ് നിരക്ക്: 1 യൂണിറ്റ് = ? LKR",
+  hMid:"Google അല്ലെങ്കിൽ xe.com-ൽ ഇന്നത്തെ നിരക്ക് നോക്കി നൽകുക",
+  res:"ഫലം",prov:"സേവനങ്ങൾ (അവരുടെ വെബ്സൈറ്റിൽ കാണുന്നത് നൽകുക)",
+  fee:"ഫീസ്",rate:"അവർ കാണിക്കുന്ന നിരക്ക്",add:"+ സേവനം ചേർക്കുക",addAsk:"സേവനത്തിന്റെ പേര്?",
+  recv:"സ്വീകർത്താവിന് ലഭിക്കുന്നത്",hidden:"മറഞ്ഞിരിക്കുന്ന ചെലവ്",best:"ഏറ്റവും മികച്ചത്",less:"കുറവ്",
+  none:"മുകളിൽ തുകയും മാർക്കറ്റ് നിരക്കും നൽകി, താഴെ ഓരോ സേവനത്തിന്റെയും ഫീസും നിരക്കും പൂരിപ്പിക്കുക.",
+  send:"അയയ്ക്കുക",del:"നീക്കം ചെയ്യുക",
+  tips:["ലൈസൻസുള്ള സേവനങ്ങളോ ബാങ്കുകളോ മാത്രം ഉപയോഗിക്കുക. ലൈസൻസില്ലാത്ത വഴികളിൽ പണം നഷ്ടപ്പെടാനും നിയമപ്രശ്നങ്ങളുണ്ടാകാനും സാധ്യതയുണ്ട്.",
+    "ഫീസ് മാത്രമല്ല, സ്വീകർത്താവിന് ലഭിക്കുന്ന രൂപ താരതമ്യം ചെയ്യുക.",
+    "സ്ഥിരീകരിക്കുന്നതിന് തൊട്ടുമുമ്പ് നിരക്ക് വീണ്ടും പരിശോധിക്കുക, അത് മാറിക്കൊണ്ടിരിക്കും.",
+    "നിങ്ങൾ പരിശോധിച്ചുറപ്പിക്കാത്ത ആർക്കും പണം അയയ്ക്കരുത്, പ്രത്യേകിച്ച് ജോലി വാഗ്ദാനം, സമ്മാനം, \"അടിയന്തരം\" എന്നീ ആവശ്യങ്ങൾക്ക്.",
+    "അയയ്ക്കുന്നതിന് മുമ്പ് സ്വീകർത്താവിന്റെ പേരും അക്കൗണ്ട് നമ്പറും ഒന്നുകൂടി പരിശോധിക്കുക.",
+    "പണം എത്തുന്നതുവരെ റഫറൻസ് നമ്പർ സൂക്ഷിച്ചുവയ്ക്കുക."],
+  disc:"ഫീസും നിരക്കുകളും നിങ്ങൾ തന്നെ നൽകുന്നവയാണ്; അയയ്ക്കുന്നതിന് മുമ്പ് സേവനത്തിന്റെ വെബ്സൈറ്റിൽ ഉറപ്പാക്കുക. ഈ ആപ്പ് പണം കൈകാര്യം ചെയ്യുന്നില്ല, സാമ്പത്തിക ഉപദേശവുമല്ല. ചില ലിങ്കുകളിൽ നിന്ന് ഞങ്ങൾക്ക് കമ്മീഷൻ ലഭിച്ചേക്കാം; അത് റാങ്കിംഗിനെ മാറ്റില്ല."},
+ar:{sub:"اعرف المبلغ الذي يصل فعلاً إلى عائلتك في سريلانكا",
+  tCmp:"المقارنة",tSafe:"الأمان",
+  amt:"إجمالي المبلغ المرسل (شامل الرسوم)",mid:"سعر السوق: 1 وحدة = ؟ روبية",
+  hMid:"ابحث عن سعر اليوم في Google أو xe.com ثم أدخله",
+  res:"النتيجة",prov:"الخدمات (أدخل ما يعرضه موقعها)",
+  fee:"الرسوم",rate:"السعر الذي تعرضه",add:"+ إضافة خدمة",addAsk:"اسم الخدمة؟",
+  recv:"يستلم المستفيد",hidden:"التكلفة الخفية",best:"الأفضل",less:"أقل",
+  none:"أدخل المبلغ وسعر السوق أعلاه، ثم املأ رسوم وسعر كل خدمة بالأسفل.",
+  send:"إرسال",del:"حذف",
+  tips:["استخدم مزودي خدمة أو بنوكاً مرخصة فقط. القنوات غير المرخصة قد تعرضك لخسارة المال ولمشاكل قانونية.",
+    "قارن المبلغ بالروبية الذي يصل للمستفيد، وليس الرسوم فقط.",
+    "تحقق من السعر مرة أخرى قبل التأكيد لأنه يتغير.",
+    "لا ترسل أموالاً لشخص لم تتحقق منه، خاصة في عروض العمل أو الجوائز أو الطلبات \"العاجلة\".",
+    "تأكد من اسم المستفيد ورقم الحساب قبل الإرسال.",
+    "احتفظ برقم المرجع حتى يصل المبلغ."],
+  disc:"الرسوم والأسعار من إدخالك؛ تأكد منها في موقع الخدمة قبل الإرسال. هذا التطبيق لا يتعامل بالأموال وليس نصيحة مالية. قد نحصل على عمولة من بعض الروابط، ولا يؤثر ذلك على الترتيب."},
+it:{sub:"Scopri quanto riceve davvero la tua famiglia in Sri Lanka",
+  tCmp:"Confronto",tSafe:"Sicurezza",
+  amt:"Importo totale che invii (commissione inclusa)",mid:"Tasso di mercato: 1 unità = ? LKR",
+  hMid:"Cerca il tasso di oggi su Google o xe.com e inseriscilo",
+  res:"Risultati",prov:"Servizi (inserisci ciò che mostra il loro sito)",
+  fee:"Commissione",rate:"Tasso offerto",add:"+ Aggiungi servizio",addAsk:"Nome del servizio?",
+  recv:"Il destinatario riceve",hidden:"Costo nascosto",best:"Migliore",less:"in meno",
+  none:"Inserisci importo e tasso di mercato qui sopra, poi compila commissione e tasso di ogni servizio.",
+  send:"Invia",del:"Rimuovi",
+  tips:["Usa solo servizi o banche autorizzati. I canali non autorizzati possono farti perdere denaro e causare problemi legali.",
+    "Confronta le rupie che riceve il destinatario, non solo la commissione.",
+    "Ricontrolla il tasso poco prima di confermare: cambia.",
+    "Non inviare denaro a chi non hai verificato, soprattutto per offerte di lavoro, premi o richieste \"urgenti\".",
+    "Controlla bene nome e numero di conto del destinatario prima di inviare.",
+    "Conserva il numero di riferimento finché il denaro non arriva."],
+  disc:"Commissioni e tassi li inserisci tu; verificali sul sito del servizio prima di inviare. Questa app non gestisce denaro e non è consulenza finanziaria. Alcuni link possono generare una commissione per noi; non cambia mai la classifica."},
+ko:{sub:"스리랑카의 가족이 실제로 받는 금액을 확인하세요",
+  tCmp:"비교",tSafe:"안전",
+  amt:"보내는 총금액 (수수료 포함)",mid:"시장 환율: 1 단위 = ? LKR",
+  hMid:"Google 또는 xe.com에서 오늘 환율을 확인해 입력하세요",
+  res:"결과",prov:"서비스 (해당 웹사이트에 표시된 값을 입력)",
+  fee:"수수료",rate:"제공 환율",add:"+ 서비스 추가",addAsk:"서비스 이름?",
+  recv:"수취인이 받는 금액",hidden:"숨은 비용",best:"최고",less:"적음",
+  none:"위에 금액과 시장 환율을 입력한 뒤, 아래에 각 서비스의 수수료와 환율을 채워 주세요.",
+  send:"송금",del:"삭제",
+  tips:["허가받은 송금 서비스나 은행만 이용하세요. 무허가 경로는 돈을 잃거나 법적 문제가 생길 수 있습니다.",
+    "수수료만이 아니라 수취인이 받는 루피 금액을 비교하세요.",
+    "확정하기 직전에 환율을 다시 확인하세요. 환율은 계속 바뀝니다.",
+    "확인되지 않은 사람에게는 송금하지 마세요. 특히 취업 제안, 경품, \"긴급\" 요청에 주의하세요.",
+    "송금 전에 수취인 이름과 계좌번호를 다시 확인하세요.",
+    "돈이 도착할 때까지 참조 번호를 보관하세요."],
+  disc:"수수료와 환율은 직접 입력하는 값이니, 송금 전에 서비스 웹사이트에서 확인하세요. 이 앱은 돈을 다루지 않으며 금융 자문이 아닙니다. 일부 링크로 수수료를 받을 수 있으며, 순위에는 영향을 주지 않습니다."},
+ja:{sub:"スリランカのご家族が実際に受け取る金額を確認しましょう",
+  tCmp:"比較",tSafe:"安全",
+  amt:"送金総額（手数料込み）",mid:"市場レート：1単位 = ? LKR",
+  hMid:"Googleまたはxe.comで今日のレートを確認して入力してください",
+  res:"結果",prov:"サービス（各公式サイトの表示を入力）",
+  fee:"手数料",rate:"提示レート",add:"+ サービスを追加",addAsk:"サービス名は？",
+  recv:"受取人の受取額",hidden:"隠れコスト",best:"最良",less:"少ない",
+  none:"上に金額と市場レートを入力し、下で各サービスの手数料とレートを入力してください。",
+  send:"送金する",del:"削除",
+  tips:["認可を受けた送金サービスか銀行だけを使いましょう。無認可の方法は資金を失ったり法的な問題になる恐れがあります。",
+    "手数料だけでなく、受取人が受け取るルピー額を比べましょう。",
+    "確定する直前にレートをもう一度確認しましょう。レートは変動します。",
+    "確認できていない相手には送金しないでください。特に仕事の誘い、当選、「至急」の依頼に注意。",
+    "送金前に受取人の名前と口座番号をもう一度確認しましょう。",
+    "お金が届くまで、参照番号を保管しておきましょう。"],
+  disc:"手数料とレートはご自身で入力する値です。送金前に各サービスのサイトで確認してください。このアプリは送金を扱わず、金融アドバイスでもありません。一部のリンクから当方に報酬が入る場合がありますが、順位には影響しません。"},
+fr:{sub:"Voyez ce que votre famille au Sri Lanka reçoit réellement",
+  tCmp:"Comparer",tSafe:"Sécurité",
+  amt:"Montant total envoyé (frais inclus)",mid:"Taux du marché : 1 unité = ? LKR",
+  hMid:"Consultez le taux du jour sur Google ou xe.com et saisissez-le",
+  res:"Résultats",prov:"Services (saisissez ce qu'affiche leur site)",
+  fee:"Frais",rate:"Taux proposé",add:"+ Ajouter un service",addAsk:"Nom du service ?",
+  recv:"Le bénéficiaire reçoit",hidden:"Coût caché",best:"Meilleur",less:"de moins",
+  none:"Saisissez le montant et le taux du marché ci-dessus, puis renseignez les frais et le taux de chaque service.",
+  send:"Envoyer",del:"Supprimer",
+  tips:["N'utilisez que des services ou des banques agréés. Les circuits non autorisés peuvent vous faire perdre votre argent et poser des problèmes juridiques.",
+    "Comparez les roupies que reçoit le bénéficiaire, pas seulement les frais.",
+    "Revérifiez le taux juste avant de confirmer : il change.",
+    "N'envoyez pas d'argent à quelqu'un que vous n'avez pas vérifié, surtout pour une offre d'emploi, un prix ou une demande \"urgente\".",
+    "Vérifiez bien le nom et le numéro de compte du bénéficiaire avant d'envoyer.",
+    "Conservez le numéro de référence jusqu'à l'arrivée de l'argent."],
+  disc:"Les frais et taux sont saisis par vous ; vérifiez-les sur le site du service avant d'envoyer. Cette appli ne manipule pas d'argent et ne constitue pas un conseil financier. Certains liens peuvent nous rapporter une commission ; cela ne change jamais le classement."},
+de:{sub:"Sehen Sie, was Ihre Familie in Sri Lanka wirklich erhält",
+  tCmp:"Vergleich",tSafe:"Sicherheit",
+  amt:"Gesamtbetrag, den Sie senden (inkl. Gebühr)",mid:"Marktkurs: 1 Einheit = ? LKR",
+  hMid:"Heutigen Kurs bei Google oder xe.com nachschlagen und eingeben",
+  res:"Ergebnis",prov:"Anbieter (tragen Sie ein, was deren Website zeigt)",
+  fee:"Gebühr",rate:"Angebotener Kurs",add:"+ Anbieter hinzufügen",addAsk:"Name des Anbieters?",
+  recv:"Empfänger erhält",hidden:"Versteckte Kosten",best:"Beste",less:"weniger",
+  none:"Geben Sie oben Betrag und Marktkurs ein und tragen Sie unten Gebühr und Kurs jedes Anbieters ein.",
+  send:"Senden",del:"Entfernen",
+  tips:["Nutzen Sie nur lizenzierte Anbieter oder Banken. Nicht lizenzierte Wege können Geldverlust und rechtliche Probleme bedeuten.",
+    "Vergleichen Sie die Rupien, die der Empfänger erhält, nicht nur die Gebühr.",
+    "Prüfen Sie den Kurs kurz vor der Bestätigung noch einmal, er ändert sich.",
+    "Senden Sie kein Geld an Personen, die Sie nicht überprüft haben, besonders bei Jobangeboten, Gewinnen oder \"dringenden\" Bitten.",
+    "Prüfen Sie Namen und Kontonummer des Empfängers vor dem Senden noch einmal.",
+    "Bewahren Sie die Referenznummer auf, bis das Geld angekommen ist."],
+  disc:"Gebühren und Kurse geben Sie selbst ein; bestätigen Sie sie vor dem Senden auf der Website des Anbieters. Diese App verwaltet kein Geld und ist keine Finanzberatung. Für manche Links erhalten wir möglicherweise eine Provision; sie ändert nie die Rangfolge."},
+ms:{sub:"Lihat jumlah sebenar yang diterima keluarga anda di Sri Lanka",
+  tCmp:"Banding",tSafe:"Keselamatan",
+  amt:"Jumlah penuh yang dihantar (termasuk yuran)",mid:"Kadar pasaran: 1 unit = ? LKR",
+  hMid:"Semak kadar hari ini di Google atau xe.com dan masukkannya",
+  res:"Keputusan",prov:"Perkhidmatan (masukkan apa yang dipaparkan di laman web mereka)",
+  fee:"Yuran",rate:"Kadar ditawarkan",add:"+ Tambah perkhidmatan",addAsk:"Nama perkhidmatan?",
+  recv:"Penerima dapat",hidden:"Kos tersembunyi",best:"Terbaik",less:"kurang",
+  none:"Masukkan jumlah dan kadar pasaran di atas, kemudian isi yuran dan kadar setiap perkhidmatan di bawah.",
+  send:"Hantar",del:"Buang",
+  tips:["Gunakan hanya perkhidmatan atau bank yang berlesen. Saluran tanpa lesen boleh menyebabkan kehilangan wang dan masalah undang-undang.",
+    "Banding jumlah rupee yang diterima penerima, bukan yuran sahaja.",
+    "Semak semula kadar sebelum mengesahkan kerana ia berubah.",
+    "Jangan hantar wang kepada orang yang belum anda sahkan, terutamanya untuk tawaran kerja, hadiah atau permintaan \"segera\".",
+    "Semak semula nama dan nombor akaun penerima sebelum menghantar.",
+    "Simpan nombor rujukan sehingga wang sampai."],
+  disc:"Yuran dan kadar dimasukkan oleh anda; sahkan di laman web perkhidmatan sebelum menghantar. Aplikasi ini tidak mengendalikan wang dan bukan nasihat kewangan. Sesetengah pautan mungkin memberi kami komisen; ia tidak pernah mengubah kedudukan."}
+};
+const MORE={
+ta:"உங்கள் மொழி பட்டியலில் இல்லையா? உலாவியின் Translate வசதியைப் பயன்படுத்துங்கள்.",
+si:"ඔබේ භාෂාව ලැයිස්තුවේ නැද්ද? බ්‍රවුසරයේ Translate පහසුකම භාවිත කරන්න.",
+en:"Your language not listed? Use your browser's Translate feature.",
+hi:"आपकी भाषा सूची में नहीं है? ब्राउज़र की Translate सुविधा इस्तेमाल करें।",
+ml:"നിങ്ങളുടെ ഭാഷ പട്ടികയിലില്ലേ? ബ്രൗസറിലെ Translate സൗകര്യം ഉപയോഗിക്കുക.",
+ar:"لغتك غير موجودة؟ استخدم ميزة الترجمة في المتصفح.",
+it:"La tua lingua non è nell'elenco? Usa la funzione Traduci del browser.",
+ko:"찾는 언어가 없나요? 브라우저의 번역 기능을 사용해 보세요.",
+ja:"お使いの言語がありませんか？ブラウザの翻訳機能をご利用ください。",
+fr:"Votre langue n'est pas dans la liste ? Utilisez la fonction Traduire de votre navigateur.",
+de:"Ihre Sprache fehlt ? Nutzen Sie die Übersetzungsfunktion Ihres Browsers.".replace(" ?","?"),
+ms:"Bahasa anda tiada dalam senarai? Gunakan ciri Terjemah pelayar anda."
+};
+const CURS=["USD","GBP","EUR","AUD","CAD","SAR","AED","QAR","KWD","OMR","SGD","JPY"];
+const DEFAULT_PROVS=["Wise","Remitly","WorldRemit","Western Union","MoneyGram","Xoom","OrbitRemit"];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const KEY="lankaremit.v1";
+const uid=()=>Math.random().toString(36).slice(2,8);
+
+function fresh(){
+  const guess=(navigator.language||"en").slice(0,2);
+  return{lang:T[guess]?guess:"ta",amt:"",cur:"USD",mid:"",
+    provs:DEFAULT_PROVS.map(n=>({id:uid(),name:n,fee:"",rate:""}))};
+}
+let S;
+try{S=Object.assign(fresh(),JSON.parse(localStorage.getItem(KEY)||"null")||{})}catch(e){S=fresh()}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const t=k=>T[S.lang][k];
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
+const lkr=n=>"Rs. "+Math.round(n).toLocaleString("en-US");
+
+/* ---- மொழி ---- */
+function applyLang(){
+  document.documentElement.lang=S.lang;
+  document.documentElement.dir=S.lang==="ar"?"rtl":"ltr";
+  $("lang").value=S.lang;
+  $("sub").textContent=t("sub");
+  $("tCmp").textContent=t("tCmp");$("tSafe").textContent=t("tSafe");
+  $("lAmt").textContent=t("amt");$("lMid").textContent=t("mid");$("hMid").textContent=t("hMid");
+  $("hRes").textContent=t("res");$("hProv").textContent=t("prov");
+  $("add").textContent=t("add");
+  $("disc").textContent=t("disc");
+  $("more").textContent=MORE[S.lang]||MORE.en;
+  $("tips").innerHTML=T[S.lang].tips.map((x,i)=>`<li><span>${i+1}</span><div>${esc(x)}</div></li>`).join("");
+  renderProvs();calc();
+}
+
+/* ---- சேவைகள் ---- */
+function renderProvs(){
+  $("provs").innerHTML=S.provs.map(p=>`
+    <div class="prov" data-id="${p.id}">
+      <div class="prov-head"><b>${esc(p.name)}</b><button class="x" data-del="${p.id}" aria-label="${esc(t("del"))}">✕</button></div>
+      <div class="two">
+        <div><label>${esc(t("fee"))} (${esc(S.cur)})</label><input type="number" inputmode="decimal" min="0" step="any" data-f="fee" value="${esc(p.fee)}"></div>
+        <div><label>${esc(t("rate"))} (LKR)</label><input type="number" inputmode="decimal" min="0" step="any" data-f="rate" value="${esc(p.rate)}"></div>
+      </div>
+    </div>`).join("");
+  $("provs").querySelectorAll("input").forEach(inp=>inp.oninput=()=>{
+    const p=S.provs.find(x=>x.id===inp.closest(".prov").dataset.id);
+    p[inp.dataset.f]=inp.value;save();calc();
+  });
+  $("provs").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+    S.provs=S.provs.filter(x=>x.id!==b.dataset.del);save();renderProvs();calc();
+  });
+}
+$("add").onclick=()=>{
+  const n=(prompt(t("addAsk"))||"").trim();
+  if(!n)return;
+  S.provs.push({id:uid(),name:n.slice(0,30),fee:"",rate:""});
+  save();renderProvs();
+};
+
+/* ---- கணக்கு ---- */
+function calc(){
+  const amt=num(S.amt),mid=num(S.mid);
+  const rows=S.provs.map(p=>{
+    const rate=num(p.rate),fee=num(p.fee);
+    if(!(amt>0)||!(rate>0))return null;
+    const recv=Math.max(0,amt-fee)*rate;
+    const ideal=mid>0?amt*mid:0;
+    return{p,recv,hidden:ideal>0?(ideal-recv)/ideal*100:null};
+  }).filter(Boolean).sort((a,b)=>b.recv-a.recv);
+
+  if(!rows.length){$("res").innerHTML=`<li class="empty" style="display:block;border:0">${esc(t("none"))}</li>`;return}
+  const top=rows[0].recv;
+  $("res").innerHTML=rows.map((r,i)=>{
+    const link=LINKS[r.p.name];
+    const diff=top-r.recv;
+    const sub=[
+      r.hidden!==null?`${t("hidden")}: ${r.hidden.toFixed(1)}%`:"",
+      i>0?`−${lkr(diff)} ${t("less")}`:""
+    ].filter(Boolean).join(" · ");
+    return `<li class="${i===0?"best":""}">
+      <div><span class="n">${esc(r.p.name)}</span>${i===0?`<span class="badge">${esc(t("best"))}</span>`:""}
+        <div class="s">${esc(sub)}</div>
+        ${link?`<a class="go" href="${esc(link)}" target="_blank" rel="noopener sponsored">${esc(t("send"))}</a>`:""}
+      </div>
+      <div style="text-align:end"><div class="s">${esc(t("recv"))}</div><div class="big">${lkr(r.recv)}</div></div>
+    </li>`;
+  }).join("");
+}
+
+/* ---- நிகழ்வுகள் ---- */
+$("cur").innerHTML=CURS.map(c=>`<option>${c}</option>`).join("");
+$("cur").value=S.cur;$("amt").value=S.amt;$("mid").value=S.mid;
+$("cur").onchange=()=>{S.cur=$("cur").value;save();renderProvs();calc()};
+$("amt").oninput=()=>{S.amt=$("amt").value;save();calc()};
+$("mid").oninput=()=>{S.mid=$("mid").value;save();calc()};
+$("lang").onchange=()=>{S.lang=$("lang").value;save();applyLang()};
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("on",p.id==="p-"+b.dataset.p));
+});
+
+applyLang();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
